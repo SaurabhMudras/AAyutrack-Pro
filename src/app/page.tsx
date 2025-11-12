@@ -3,7 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import { useEffect, useState } from "react";
+import { useAuth, useUser } from "@/firebase";
+import { initiateEmailSignIn } from "@/firebase/non-blocking-login";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,18 +17,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const [email, setEmail] = useState("patient@aayutrack.com");
+  const [password, setPassword] = useState("password");
+
   const loginImage = PlaceHolderImages.find(image => image.id === "login-hero");
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      toast({
+        title: "Login Successful",
+        description: "Redirecting to your dashboard...",
+      });
+      router.push("/dashboard");
+    }
+  }, [user, isUserLoading, router, toast]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Login Successful",
-      description: "Redirecting to your dashboard...",
-    });
-    // Simulate API call and redirect
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 1000);
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Missing Fields",
+        description: "Please enter both email and password.",
+      });
+      return;
+    }
+    initiateEmailSignIn(auth, email, password);
   };
 
   return (
@@ -50,7 +68,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
-                defaultValue="patient@aayutrack.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -63,10 +82,16 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+              />
             </div>
-            <Button type="submit" className="w-full font-bold">
-              Login
+            <Button type="submit" className="w-full font-bold" disabled={isUserLoading}>
+              {isUserLoading ? 'Logging in...' : 'Login'}
             </Button>
             <Button variant="outline" className="w-full">
               Login with Google

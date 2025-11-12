@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import { useFirestore, useUser } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,18 +23,63 @@ import { Textarea } from "@/components/ui/textarea";
 export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
   const handleFinish = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Authenticated",
+            description: "You must be logged in to complete onboarding.",
+        });
+        router.push("/");
+        return;
+    }
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const profileData = {
+        // Not all fields are in the form, but we can add them as needed
+        address: formData.get("address"),
+        emergencyContact: `${formData.get("emergency-name")} (${formData.get("emergency-relation")}, ${formData.get("emergency-phone")})`,
+        medicalHistory: `Allergies: ${formData.get("allergies")}. Conditions: ${formData.get("conditions")}. Medications: ${formData.get("medications")}`,
+        doctorInfo: `Dr. ${formData.get("doctor-name")} (${formData.get("doctor-specialty")}) - ${formData.get("doctor-email")}`,
+        // These fields would come from the signup page or be added here
+        firstName: user.displayName?.split(" ")[0] || "",
+        lastName: user.displayName?.split(" ")[1] || "",
+        email: user.email,
+        firebaseUid: user.uid,
+        id: user.uid,
+    };
+
+    const userDocRef = doc(firestore, "users", user.uid);
+    setDocumentNonBlocking(userDocRef, profileData, { merge: true });
+
     toast({
       title: "Onboarding Complete",
       description: "Welcome! Redirecting to your dashboard...",
     });
-    // Simulate API call and redirect
+
     setTimeout(() => {
       router.push("/dashboard");
     }, 1000);
   };
+
+  if (isUserLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
+    // This should ideally not be seen as we redirect, but as a fallback.
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen">
+            <p>You need to be logged in to view this page.</p>
+            <Button onClick={() => router.push('/')} className="mt-4">Go to Login</Button>
+        </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen py-12 bg-background">
@@ -64,11 +110,11 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="dob">Date of Birth</Label>
-                    <Input id="dob" type="date" required />
+                    <Input id="dob" name="dob" type="date" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
-                    <Select>
+                    <Select name="gender">
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -83,7 +129,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Address</Label>
-                  <Input id="address" placeholder="123 Wellness Lane" />
+                  <Input id="address" name="address" placeholder="123 Wellness Lane" />
                 </div>
               </CardContent>
             </Card>
@@ -99,16 +145,16 @@ export default function OnboardingPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="emergency-name">Full Name</Label>
-                  <Input id="emergency-name" placeholder="Jane Doe" required />
+                  <Input id="emergency-name" name="emergency-name" placeholder="Jane Doe" required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="emergency-relation">Relationship</Label>
-                    <Input id="emergency-relation" placeholder="Spouse" required />
+                    <Input id="emergency-relation" name="emergency-relation" placeholder="Spouse" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="emergency-phone">Phone Number</Label>
-                    <Input id="emergency-phone" placeholder="(555) 123-4567" required />
+                    <Input id="emergency-phone" name="emergency-phone" placeholder="(555) 123-4567" required />
                   </div>
                 </div>
               </CardContent>
@@ -125,15 +171,15 @@ export default function OnboardingPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="allergies">Allergies</Label>
-                  <Textarea id="allergies" placeholder="e.g., Penicillin, Peanuts" />
+                  <Textarea id="allergies" name="allergies" placeholder="e.g., Penicillin, Peanuts" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="conditions">Chronic Conditions</Label>
-                  <Textarea id="conditions" placeholder="e.g., Hypertension, Diabetes Type 2" />
+                  <Textarea id="conditions" name="conditions" placeholder="e.g., Hypertension, Diabetes Type 2" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="medications">Current Medications</Label>
-                  <Textarea id="medications" placeholder="e.g., Metformin 500mg, Lisinopril 10mg" />
+                  <Textarea id="medications" name="medications" placeholder="e.g., Metformin 500mg, Lisinopril 10mg" />
                 </div>
               </CardContent>
             </Card>
@@ -149,23 +195,23 @@ export default function OnboardingPage() {
               <CardContent className="space-y-4">
                  <div className="space-y-2">
                   <Label htmlFor="doctor-name">Doctor's Full Name</Label>
-                  <Input id="doctor-name" placeholder="Dr. Evelyn Reed" />
+                  <Input id="doctor-name" name="doctor-name" placeholder="Dr. Evelyn Reed" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="doctor-specialty">Specialty</Label>cv
-                    <Input id="doctor-specialty" placeholder="Cardiologist" />
+                    <Label htmlFor="doctor-specialty">Specialty</Label>
+                    <Input id="doctor-specialty" name="doctor-specialty" placeholder="Cardiologist" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="doctor-email">Doctor's Email for Reports</Label>
-                    <Input id="doctor-email" placeholder="e.reed@clinic.com" type="email" />
+                    <Input id="doctor-email" name="doctor-email" placeholder="e.reed@clinic.com" type="email" />
                   </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
           <div className="flex justify-end mt-6">
-            <Button type="submit" className="px-8 font-bold">Finish Setup</Button>
+            <Button type="submit" className="px-8 font-bold" disabled={isUserLoading}>Finish Setup</Button>
           </div>
         </form>
       </Tabs>

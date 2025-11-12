@@ -1,7 +1,6 @@
 "use client";
 
-import React, from "react";
-import { useFormState } from "react-dom";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentsui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -44,8 +43,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function AiCheckupPage() {
-  const [result, setResult] = React.useState<AISymptomCheckerOutput | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [result, setResult] = useState<AISymptomCheckerOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

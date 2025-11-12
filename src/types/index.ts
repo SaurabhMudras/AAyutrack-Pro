@@ -43,6 +43,7 @@ export type Doctor = {
   name: string;
   specialty: string;
   avatarUrl: string;
+  email?: string;
 };
 
 export type Hospital = {
