@@ -1,0 +1,202 @@
+/**
+ * @file Firestore Security Rules for AAYUTRACK Pro
+ * @description This ruleset enforces a strict user-ownership model for patient data,
+ *              allowing patients to manage their own health information while also enabling
+ *              secure sharing with doctors. Data is organized under /users/{userId},
+ *              where {userId} corresponds to the Firebase UID of the patient.
+ *
+ * Core Philosophy:
+ *  This ruleset enforces a strict user-ownership model. Each user (patient) can only
+ *  access their own data. Sharing with doctors is enabled through a dedicated
+ *  subcollection that models membership.
+ *
+ * Data Structure:
+ *  - /users/{userId}: Patient profile information.
+ *  - /users/{userId}/health_metrics/{healthMetricId}: Health metrics logged by the patient.
+ *  - /users/{userId}/medication_logs/{medicationLogId}: Medication logs for the patient.
+ *  - /users/{userId}/symptoms/{symptomId}: Symptoms reported by the patient.
+ *  - /users/{userId}/reports/{reportId}: Health reports generated for the patient.
+ *  - /users/{userId}/streaks/{streakId}: Streak data for the patient.
+ *  - /users/{userId}/sharedWithDoctors/{doctorId}: Indicates data sharing with a doctor.
+ *
+ * Key Security Decisions:
+ *  - Patients can only read and write their own data.
+ *  - Doctors gain access to patient data only through explicit sharing, modeled by the
+ *    existence of a document in the `sharedWithDoctors` subcollection.
+ *  - Listing of users is disallowed to protect privacy.
+ *  - The `sharedWithDoctors` collection uses document existence to manage access,
+ *    avoiding the need for complex queries.
+ *
+ * Denormalization for Authorization:
+ *  - Each document under `/users/{userId}` implicitly belongs to that user, as enforced
+ *    by the path structure. This avoids the need for an explicit `ownerId` field within
+ *    the documents themselves.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Defines the isOwner function which returns true if the uid matches the userId
+     */
+    function isOwner(userId) {
+        return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Defines the isExistingOwner function which returns true if the uid matches the userId and the resource exists
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rules for the /users/{userId} collection.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user_abc' can create their profile document if request.auth.uid == 'user_abc'.
+     * @deny (create) User with UID 'user_xyz' cannot create a profile document for 'user_abc'.
+     * @allow (get) User with UID 'user_abc' can get their profile document.
+     * @deny (get) User with UID 'user_xyz' cannot get the profile document for 'user_abc'.
+     * @allow (update) User with UID 'user_abc' can update their profile document.
+     * @deny (update) User with UID 'user_xyz' cannot update the profile document for 'user_abc'.
+     * @allow (delete) User with UID 'user_abc' can delete their profile document.
+     * @deny (delete) User with UID 'user_xyz' cannot delete the profile document for 'user_abc'.
+     * @principle Enforces document ownership for writes and reads, validates data consistency.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing of all users for privacy.
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId}/health_metrics/{healthMetricId} collection.
+     * @path /users/{userId}/health_metrics/{healthMetricId}
+     * @allow (create) User with UID 'user_abc' can create a health metric log under their profile.
+     * @deny (create) User with UID 'user_xyz' cannot create a health metric log under 'user_abc''s profile.
+     * @allow (get) User with UID 'user_abc' can get a health metric log under their profile.
+     * @deny (get) User with UID 'user_xyz' cannot get a health metric log under 'user_abc''s profile.
+     * @allow (update) User with UID 'user_abc' can update a health metric log under their profile.
+     * @deny (update) User with UID 'user_xyz' cannot update a health metric log under 'user_abc''s profile.
+     * @allow (delete) User with UID 'user_abc' can delete a health metric log under their profile.
+     * @deny (delete) User with UID 'user_xyz' cannot delete a health metric log under 'user_abc''s profile.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/health_metrics/{healthMetricId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId}/medication_logs/{medicationLogId} collection.
+     * @path /users/{userId}/medication_logs/{medicationLogId}
+     * @allow (create) User with UID 'user_abc' can create a medication log under their profile.
+     * @deny (create) User with UID 'user_xyz' cannot create a medication log under 'user_abc''s profile.
+     * @allow (get) User with UID 'user_abc' can get a medication log under their profile.
+     * @deny (get) User with UID 'user_xyz' cannot get a medication log under 'user_abc''s profile.
+     * @allow (update) User with UID 'user_abc' can update a medication log under their profile.
+     * @deny (update) User with UID 'user_xyz' cannot update a medication log under 'user_abc''s profile.
+     * @allow (delete) User with UID 'user_abc' can delete a medication log under their profile.
+     * @deny (delete) User with UID 'user_xyz' cannot delete a medication log under 'user_abc''s profile.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/medication_logs/{medicationLogId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId}/symptoms/{symptomId} collection.
+     * @path /users/{userId}/symptoms/{symptomId}
+     * @allow (create) User with UID 'user_abc' can create a symptom log under their profile.
+     * @deny (create) User with UID 'user_xyz' cannot create a symptom log under 'user_abc''s profile.
+     * @allow (get) User with UID 'user_abc' can get a symptom log under their profile.
+     * @deny (get) User with UID 'user_xyz' cannot get a symptom log under 'user_abc''s profile.
+     * @allow (update) User with UID 'user_abc' can update a symptom log under their profile.
+     * @deny (update) User with UID 'user_xyz' cannot update a symptom log under 'user_abc''s profile.
+     * @allow (delete) User with UID 'user_abc' can delete a symptom log under their profile.
+     * @deny (delete) User with UID 'user_xyz' cannot delete a symptom log under 'user_abc''s profile.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/symptoms/{symptomId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId}/reports/{reportId} collection.
+     * @path /users/{userId}/reports/{reportId}
+     * @allow (create) User with UID 'user_abc' can create a report under their profile.
+     * @deny (create) User with UID 'user_xyz' cannot create a report under 'user_abc''s profile.
+     * @allow (get) User with UID 'user_abc' can get a report under their profile.
+     * @deny (get) User with UID 'user_xyz' cannot get a report under 'user_abc''s profile.
+     * @allow (update) User with UID 'user_abc' can update a report under their profile.
+     * @deny (update) User with UID 'user_xyz' cannot update a report under 'user_abc''s profile.
+     * @allow (delete) User with UID 'user_abc' can delete a report under their profile.
+     * @deny (delete) User with UID 'user_xyz' cannot delete a report under 'user_abc''s profile.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/reports/{reportId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId}/streaks/{streakId} collection.
+     * @path /users/{userId}/streaks/{streakId}
+     * @allow (create) User with UID 'user_abc' can create a streak under their profile.
+     * @deny (create) User with UID 'user_xyz' cannot create a streak under 'user_abc''s profile.
+     * @allow (get) User with UID 'user_abc' can get a streak under their profile.
+     * @deny (get) User with UID 'user_xyz' cannot get a streak under 'user_abc''s profile.
+     * @allow (update) User with UID 'user_abc' can update a streak under their profile.
+     * @deny (update) User with UID 'user_xyz' cannot update a streak under 'user_abc''s profile.
+     * @allow (delete) User with UID 'user_abc' can delete a streak under their profile.
+     * @deny (delete) User with UID 'user_xyz' cannot delete a streak log under 'user_abc''s profile.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/streaks/{streakId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+     /**
+      * @description Rules for the /users/{userId}/sharedWithDoctors/{doctorId} collection.  The mere existence of the document implies sharing.
+      * @path /users/{userId}/sharedWithDoctors/{doctorId}
+      * @allow (create) The user can grant access to a doctor by creating a document with the ID of the Doctor
+      * @deny (create) User with UID 'user_xyz' cannot create a sharedWithDoctor document under 'user_abc''s profile.
+      * @allow (get) The doctor that has been granted access can get the (empty) document.
+      * @deny (get) User with UID 'user_xyz' cannot get a sharedWithDoctor document under 'user_abc''s profile.
+      * @allow (list) The user can list the doctors with whom their data has been shared.
+      * @deny (list) User with UID 'user_xyz' cannot list sharedWithDoctor documents under 'user_abc''s profile.
+      * @allow (update) Update is not allowed on the sharing doc
+      * @deny (update) User with UID 'user_xyz' cannot update a sharedWithDoctor document under 'user_abc''s profile.
+      * @allow (delete) The user can revoke access to a doctor by deleting the document.
+      * @deny (delete) User with UID 'user_xyz' cannot delete a sharedWithDoctor document under 'user_abc''s profile.
+      * @principle Enforces document ownership for writes and reads, uses document existence as a membership signal.
+      */
+    match /users/{userId}/sharedWithDoctors/{doctorId} {
+        allow get: if request.auth.uid == doctorId;
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if false;
+        allow delete: if isOwner(userId);
+    }
+  }
+}

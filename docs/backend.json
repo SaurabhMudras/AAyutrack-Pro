@@ -1,0 +1,419 @@
+{
+  "entities": {
+    "Patient": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Patient",
+      "type": "object",
+      "description": "Represents a patient in the AAYUTRACK Pro application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the patient entity."
+        },
+        "firebaseUid": {
+          "type": "string",
+          "description": "Firebase UID associated with the patient's account."
+        },
+        "rmbpId": {
+          "type": "string",
+          "description": "RBMP ID of the patient."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the patient."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the patient."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the patient.",
+          "format": "email"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Mobile number of the patient."
+        },
+        "profilePhotoUrl": {
+          "type": "string",
+          "description": "URL of the patient's profile photo.",
+          "format": "uri"
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the patient."
+        },
+        "emergencyContact": {
+          "type": "string",
+          "description": "Emergency contact information for the patient."
+        },
+        "medicalHistory": {
+          "type": "string",
+          "description": "Medical history of the patient."
+        },
+        "doctorInfo": {
+          "type": "string",
+          "description": "Information about the patient's doctor."
+        },
+        "professionalStatus": {
+          "type": "string",
+          "description": "Professional status of the patient."
+        }
+      },
+      "required": [
+        "id",
+        "firebaseUid",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "HealthMetric": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HealthMetric",
+      "type": "object",
+      "description": "Represents a health metric logged by a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the health metric entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N HealthMetric)"
+        },
+        "metricType": {
+          "type": "string",
+          "description": "Type of health metric (e.g., steps, hydration)."
+        },
+        "value": {
+          "type": "number",
+          "description": "Value of the health metric."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement for the health metric."
+        },
+        "loggedAt": {
+          "type": "string",
+          "description": "Timestamp when the health metric was logged.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "metricType",
+        "value",
+        "loggedAt"
+      ]
+    },
+    "MedicationLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicationLog",
+      "type": "object",
+      "description": "Represents a log of medication taken by a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the medication log entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N MedicationLog)"
+        },
+        "medicationName": {
+          "type": "string",
+          "description": "Name of the medication."
+        },
+        "dosage": {
+          "type": "string",
+          "description": "Dosage of the medication."
+        },
+        "taken": {
+          "type": "boolean",
+          "description": "Indicates whether the medication was taken."
+        },
+        "scheduledTime": {
+          "type": "string",
+          "description": "Scheduled time for taking the medication.",
+          "format": "date-time"
+        },
+        "takenTime": {
+          "type": "string",
+          "description": "Time when the medication was actually taken.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "medicationName",
+        "dosage",
+        "taken",
+        "scheduledTime"
+      ]
+    },
+    "Symptom": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Symptom",
+      "type": "object",
+      "description": "Represents a symptom reported by a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the symptom entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N Symptom)"
+        },
+        "symptoms": {
+          "type": "string",
+          "description": "Description of the symptoms."
+        },
+        "aiAnalysis": {
+          "type": "string",
+          "description": "AI analysis of the symptoms."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the symptoms."
+        },
+        "loggedAt": {
+          "type": "string",
+          "description": "Timestamp when the symptoms were logged.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "symptoms",
+        "severity",
+        "loggedAt"
+      ]
+    },
+    "Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Report",
+      "type": "object",
+      "description": "Represents a health report generated for a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the report entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N Report)"
+        },
+        "reportType": {
+          "type": "string",
+          "description": "Type of report (e.g., weekly, monthly)."
+        },
+        "reportData": {
+          "type": "string",
+          "description": "Data contained in the report (e.g., JSON or PDF URL)."
+        },
+        "sharedWithDoctor": {
+          "type": "boolean",
+          "description": "Indicates whether the report was shared with the doctor."
+        },
+        "sharedWithFamily": {
+          "type": "boolean",
+          "description": "Indicates whether the report was shared with family."
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "reportType",
+        "reportData"
+      ]
+    },
+    "Streak": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Streak",
+      "type": "object",
+      "description": "Represents a streak achieved by a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the streak entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N Streak)"
+        },
+        "streakType": {
+          "type": "string",
+          "description": "Type of streak (e.g., daily, weekly)."
+        },
+        "currentStreak": {
+          "type": "number",
+          "description": "Current length of the streak."
+        },
+        "longestStreak": {
+          "type": "number",
+          "description": "Longest streak achieved."
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "streakType",
+        "currentStreak",
+        "longestStreak"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "Patient",
+          "schema": {
+            "$ref": "#/backend/entities/Patient"
+          },
+          "description": "Stores patient profile information. This is the main entry point for user-specific data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/health_metrics/{healthMetricId}",
+        "definition": {
+          "entityName": "HealthMetric",
+          "schema": {
+            "$ref": "#/backend/entities/HealthMetric"
+          },
+          "description": "Stores health metrics logged by the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "healthMetricId",
+              "description": "Unique identifier for the health metric log."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/medication_logs/{medicationLogId}",
+        "definition": {
+          "entityName": "MedicationLog",
+          "schema": {
+            "$ref": "#/backend/entities/MedicationLog"
+          },
+          "description": "Stores medication logs for the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "medicationLogId",
+              "description": "Unique identifier for the medication log."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/symptoms/{symptomId}",
+        "definition": {
+          "entityName": "Symptom",
+          "schema": {
+            "$ref": "#/backend/entities/Symptom"
+          },
+          "description": "Stores symptoms reported by the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "symptomId",
+              "description": "Unique identifier for the symptom report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": {
+            "$ref": "#/backend/entities/Report"
+          },
+          "description": "Stores health reports generated for the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "reportId",
+              "description": "Unique identifier for the health report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/streaks/{streakId}",
+        "definition": {
+          "entityName": "Streak",
+          "schema": {
+            "$ref": "#/backend/entities/Streak"
+          },
+          "description": "Stores streak data for the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "streakId",
+              "description": "Unique identifier for the streak."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/sharedWithDoctors/{doctorId}",
+        "definition": {
+          "entityName": "SharedWithDoctors",
+          "schema": {
+            "$ref": "#/backend/entities/Patient"
+          },
+          "description": "Used to represent a Patient sharing their data with a Doctor. The mere existence of the document grants access. The document should be empty",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "doctorId",
+              "description": "The Firebase UID of the doctor with whom the data is shared."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, in accordance with the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). This design prioritizes denormalization to avoid hierarchical authorization dependencies, structural segregation for homogeneous security postures, and access modeling using path-based ownership and membership maps.\n\n*Authorization Independence:*  Each document contains all the information required to authorize access, removing the need for `get()` calls in security rules. For example, the `health_metrics` collection includes the `patientId` which is used for authorization, meaning that a rule does not need to access the patient document to ensure the `request.auth.uid` matches.\n\n*Structural Segregation:* Data with different access requirements are stored in separate collections. User-specific data (health metrics, medication logs, symptoms, reports, streaks) are nested under `/users/{userId}`. This segregation allows for simple, collection-level security rules.\n\n*Access Modeling:*\n    *   **Path-Based Ownership:** The `/users/{userId}` path establishes clear ownership. All data nested under a user's document is owned by that user.\n    *   **Membership Map for Shared Access:** The `sharedWithDoctors` subcollection uses document existence to grant doctor access. This models collaborative access without relying on custom claims.\n\n*QAPs (Rules are not Filters):*  The structure enables secure `list` operations by ensuring that rules can validate access without fetching additional documents. For example, listing health metrics under `/users/{userId}/health_metrics` only requires checking that the `request.auth.uid` matches the `userId` parameter in the path. Similarly, access to shared reports is controlled by existence within the `sharedWithDoctors` subcollection, ensuring that only authorized doctors can access them."
+  }
+}
