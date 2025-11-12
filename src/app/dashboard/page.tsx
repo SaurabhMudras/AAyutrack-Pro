@@ -129,7 +129,7 @@ export default function Dashboard() {
               <Link href="/dashboard/progress">
                 View All
                 <ArrowUpRight className="h-4 w-4" />
-              </Link>sever
+              </Link>
             </Button>
           </CardHeader>
           <CardContent>
