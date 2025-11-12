@@ -16,7 +16,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { Badge } from "@/componentsui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,7 +42,6 @@ import {
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -51,7 +49,7 @@ import {
 } from "recharts";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import { ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 
 const chartData = [
   { day: "Mon", steps: 5500 },
@@ -62,6 +60,13 @@ const chartData = [
   { day: "Sat", steps: 11500 },
   { day: "Sun", steps: 8230 },
 ];
+
+const chartConfig = {
+  steps: {
+    label: "Steps",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig
 
 export default function Dashboard() {
   return (
@@ -133,15 +138,14 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+              <BarChart accessibilityLayer data={chartData}>
                 <XAxis dataKey="day" tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(value) => `${value/1000}k`} />
                 <Tooltip cursor={{fill: 'hsl(var(--secondary))'}} content={<ChartTooltipContent indicator="dot" />} />
-                <Bar dataKey="steps" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="steps" fill="var(--color-steps)" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
         <Card>
