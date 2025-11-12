@@ -52,12 +52,14 @@ export const mockDoctors: Doctor[] = [
         name: "Dr. Evelyn Reed",
         specialty: "Cardiologist",
         avatarUrl: PlaceHolderImages.find(img => img.id === 'doctor-avatar-1')?.imageUrl || '',
+        email: "evelyn.reed@clinic.com"
     },
     {
         id: "doc2",
         name: "Dr. Ben Carter",
         specialty: "Endocrinologist",
         avatarUrl: PlaceHolderImages.find(img => img.id === 'doctor-avatar-2')?.imageUrl || '',
+        email: "ben.carter@clinic.com"
     }
 ]
 
@@ -94,7 +96,7 @@ export const healthTrendsData = {
         { date: 'Wed', level: 98 },
         { date: 'Thu', level: 110 },
         { date: 'Fri', level: 102 },
-        { date 'Sat', level: 99 },
+        { date: 'Sat', level: 99 },
         { date: 'Sun', level: 96 },
     ],
     steps: [
