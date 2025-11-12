@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "login-hero",
+      "description": "A futuristic medical interface with glowing charts and diagrams, representing advanced health tracking.",
+      "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxoZWFsdGglMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc2Mjg1MjYzMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "health technology"
+    },
+    {
+      "id": "user-avatar-1",
+      "description": "Avatar for the main user of the app.",
+      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjI5MzU5MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "doctor-avatar-1",
+      "description": "Avatar for Dr. Evelyn Reed.",
+      "imageUrl": "https://images.unsplash.com/photo-1583238630782-44f48b2e6bc4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZG9jdG9yJTIwd29tYW58ZW58MHx8fHwxNzYyOTY5MTIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor woman"
+    },
+    {
+      "id": "doctor-avatar-2",
+      "description": "Avatar for Dr. Ben Carter.",
+      "imageUrl": "https://images.unsplash.com/photo-1614105687119-93b4f75e8ca9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkb2N0b3IlMjBtYW58ZW58MHx8fHwxNzYyOTI3ODA4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor man"
+    }
+  ]
 }
