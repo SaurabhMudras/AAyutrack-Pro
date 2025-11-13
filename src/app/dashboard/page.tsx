@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -8,6 +9,7 @@ import {
   Flame,
   Footprints,
   Pill,
+  PlusCircle,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -50,6 +52,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { useState } from "react";
+import AddReminderDialog from "@/components/dashboard/add-reminder-dialog";
 
 const chartData = [
   { day: "Mon", steps: 5500 },
@@ -69,8 +73,10 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function Dashboard() {
+  const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
   return (
     <>
+      <AddReminderDialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen} />
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <Card className="hover:border-primary/80 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -149,11 +155,17 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">Medication Schedule</CardTitle>
-            <CardDescription>
-              Your prescribed medications for today.
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center">
+             <div className="grid gap-2">
+                <CardTitle className="font-headline">Medication Schedule</CardTitle>
+                <CardDescription>
+                Your prescribed medications for today.
+                </CardDescription>
+            </div>
+            <Button size="sm" className="ml-auto gap-1" variant="ghost" onClick={() => setIsAddReminderOpen(true)}>
+                <PlusCircle className="h-4 w-4" />
+                Add
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>
