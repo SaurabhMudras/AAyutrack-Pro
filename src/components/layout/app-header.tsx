@@ -18,6 +18,7 @@ import {
   Bot,
   Flame,
   Share2,
+  Pill,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ import { usePathname } from "next/navigation";
 const navLinks = [
     { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/dashboard/prescriptions", icon: ClipboardType, label: "My Prescriptions" },
+    { href: "/dashboard/order-medicine", icon: Pill, label: "Order Medicine" },
     { href: "/dashboard/progress", icon: LineChart, label: "Progress" },
     { href: "/dashboard/ai-checkup", icon: Bot, label: "AI Checkup" },
     { href: "/dashboard/streaks", icon: Flame, label: "Streaks" },

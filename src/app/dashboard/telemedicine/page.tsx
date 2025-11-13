@@ -4,20 +4,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockDoctors, mockPharmacies } from "@/lib/data";
-import { Video, PhoneOff, Pill, Bike, FileText } from "lucide-react";
+import { mockDoctors } from "@/lib/data";
+import { Video, PhoneOff, FileText, Pill } from "lucide-react";
 import Image from "next/image";
 import React, { useMemo } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import type { Prescription } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export default function TelemedicinePage() {
     const [inCall, setInCall] = React.useState(false);
     const [callEnded, setCallEnded] = React.useState(false);
-    const { toast } = useToast();
     const { user, firestore } = useFirebase();
 
     const prescriptionsQuery = useMemoFirebase(() => {
@@ -32,13 +31,6 @@ export default function TelemedicinePage() {
     const handleEndCall = () => {
         setInCall(false);
         setCallEnded(true);
-    }
-
-    const handleOrder = (pharmacyName: string) => {
-        toast({
-            title: "Order Placed!",
-            description: `Your prescription has been sent to ${pharmacyName}. It will be delivered to your doorstep.`,
-        })
     }
 
     return (
@@ -101,68 +93,49 @@ export default function TelemedicinePage() {
             )}
 
             {callEnded && (
-                 <div className="grid md:grid-cols-2 gap-6 animate-in fade-in-50">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="font-headline">Consultation Ended</CardTitle>
-                            <CardDescription>Here's a summary and next steps.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground">Your consultation with Dr. Evelyn Reed is complete. Your latest prescription is shown opposite, which you can order for delivery.</p>
-                            <Button className="w-full" onClick={() => { setInCall(false); setCallEnded(false);}}>
+                 <Card className="animate-in fade-in-50">
+                    <CardHeader>
+                        <CardTitle className="font-headline">Consultation Ended</CardTitle>
+                        <CardDescription>Here's a summary and next steps.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Your consultation with Dr. Evelyn Reed is complete. Your latest prescription is shown below.</p>
+                         <Card className="mt-4">
+                            <CardHeader>
+                                <div className="flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-primary"/>
+                                    <CardTitle className="font-headline text-lg">Latest Prescription</CardTitle>
+                                </div>
+                                <CardDescription>From Dr. {latestPrescription?.doctorName} on {latestPrescription ? new Date(latestPrescription.date).toLocaleDateString() : 'N/A'}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                            {isLoading && <Skeleton className="h-20 w-full" />}
+                            {!isLoading && latestPrescription ? (
+                                latestPrescription.medicines.map((med, index) => (
+                                    <div key={index} className="text-sm">
+                                        <p className="font-medium">{med.name} <span className="text-muted-foreground">({med.dosage})</span></p>
+                                        <p className="text-xs text-muted-foreground">{med.instructions}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No recent prescription found.</p>
+                            )}
+                            </CardContent>
+                        </Card>
+
+                        <div className="flex gap-4 pt-2">
+                             <Button className="w-full" onClick={() => { setInCall(false); setCallEnded(false);}}>
                                 Start Another Call
                             </Button>
-                             <Card className="mt-4">
-                                <CardHeader>
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-primary"/>
-                                        <CardTitle className="font-headline text-lg">Latest Prescription</CardTitle>
-                                    </div>
-                                    <CardDescription>From Dr. {latestPrescription?.doctorName} on {latestPrescription ? new Date(latestPrescription.date).toLocaleDateString() : 'N/A'}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                {isLoading && <Skeleton className="h-20 w-full" />}
-                                {!isLoading && latestPrescription ? (
-                                    latestPrescription.medicines.map((med, index) => (
-                                        <div key={index} className="text-sm">
-                                            <p className="font-medium">{med.name} <span className="text-muted-foreground">({med.dosage})</span></p>
-                                            <p className="text-xs text-muted-foreground">{med.instructions}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">No recent prescription found.</p>
-                                )}
-                                </CardContent>
-                            </Card>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center gap-2">
-                                <Pill className="h-6 w-6 text-primary" />
-                                <CardTitle className="font-headline">Order Your Prescription</CardTitle>
-                            </div>
-                            <CardDescription>Get your prescribed medicines delivered from a nearby pharmacy.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {mockPharmacies.map((pharmacy) => (
-                                <div key={pharmacy.id} className="p-3 rounded-lg border flex justify-between items-center bg-background">
-                                    <div>
-                                        <p className="font-semibold">{pharmacy.name}</p>
-                                        <p className="text-sm text-muted-foreground">{pharmacy.address}</p>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <p className="text-sm font-medium">{pharmacy.distance}</p>
-                                        <Button size="sm" onClick={() => handleOrder(pharmacy.name)} disabled={!latestPrescription}>
-                                            <Bike className="mr-2 h-4 w-4"/>
-                                            Order
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                </div>
+                            <Button asChild variant="secondary" className="w-full" disabled={!latestPrescription}>
+                               <Link href="/dashboard/order-medicine">
+                                 <Pill className="mr-2"/>
+                                 Order Medicine
+                               </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             )}
         </div>
     );

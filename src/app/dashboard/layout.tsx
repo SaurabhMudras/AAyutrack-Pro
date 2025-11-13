@@ -13,6 +13,7 @@ import {
   Siren,
   Settings,
   Video,
+  Pill,
 } from "lucide-react";
 import React, { useState, useEffect } from 'react';
 
@@ -68,6 +69,13 @@ export default function DashboardLayout({
               >
                 <ClipboardType className="h-4 w-4" />
                 My Prescriptions
+              </Link>
+              <Link
+                href="/dashboard/order-medicine"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <Pill className="h-4 w-4" />
+                Order Medicine
               </Link>
               <Link
                 href="/dashboard/progress"
