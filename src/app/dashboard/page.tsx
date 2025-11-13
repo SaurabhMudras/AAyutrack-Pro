@@ -120,13 +120,28 @@ export default function Dashboard() {
       const today = format(now, "yyyy-MM-dd");
 
       for (const reminder of reminders) {
+        const isRecurringToday = reminder.isRecurring;
+        const isScheduledForToday = reminder.date === today;
+        const shouldTrigger = isRecurringToday || isScheduledForToday;
+
         const isCompletedToday = reminder.completedOn?.includes(today);
-        if (reminder.time === currentTime && !isCompletedToday) {
+
+        if (reminder.time === currentTime && shouldTrigger && !isCompletedToday) {
           const reminderText = `Reminder for ${reminder.title}. ${reminder.details || ''}`;
+          
+          // Play sound
           const audioDataUri = await textToSpeech(reminderText);
           const newAudio = new Audio(audioDataUri);
           setAudio(newAudio);
           newAudio.play();
+
+          // Show notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(reminder.title, {
+              body: reminder.details || 'It\'s time for your scheduled activity.',
+              icon: '/logo.svg', // Optional: you can add an icon
+            });
+          }
         }
       }
     };
@@ -252,8 +267,11 @@ export default function Dashboard() {
               <TableBody>
                 {reminders.map((reminder) => {
                     const isCompleted = reminder.completedOn?.includes(today);
+                    const isRecurringToday = reminder.isRecurring;
+                    const isScheduledForToday = reminder.date === today;
+
                     return (
-                        (reminder.isRecurring || reminder.date === today) &&
+                        (isRecurringToday || isScheduledForToday) &&
                         <TableRow key={reminder.id} className={isCompleted ? "bg-secondary/50 hover:bg-secondary/70" : ""}>
                             <TableCell>
                             <Checkbox 
