@@ -23,6 +23,7 @@ import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Separator } from '../ui/separator';
 
 const medicineSchema = z.object({
   name: z.string().min(1, 'Medicine name is required.'),
