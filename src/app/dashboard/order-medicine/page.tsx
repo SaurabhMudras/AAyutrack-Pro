@@ -5,29 +5,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { mockPharmacies } from "@/lib/data";
 import { Bike, FileText, Pill } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import type { Prescription } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 export default function OrderMedicinePage() {
     const { toast } = useToast();
     const { user, firestore } = useFirebase();
+    const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<string | null>(null);
 
     const prescriptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
-        return query(collection(firestore, 'users', user.uid, 'prescriptions'), orderBy('date', 'desc'), limit(1));
+        return query(collection(firestore, 'users', user.uid, 'prescriptions'), orderBy('date', 'desc'));
     }, [user, firestore]);
 
     const { data: prescriptions, isLoading } = useCollection<Prescription>(prescriptionsQuery);
-    const latestPrescription = useMemo(() => prescriptions?.[0], [prescriptions]);
+    
+    const selectedPrescription = useMemo(() => {
+        if (!selectedPrescriptionId || !prescriptions) return null;
+        return prescriptions.find(p => p.id === selectedPrescriptionId) ?? null;
+    }, [selectedPrescriptionId, prescriptions]);
 
     const handleOrder = (pharmacyName: string) => {
+        if (!selectedPrescription) return;
         toast({
             title: "Order Placed!",
-            description: `Your prescription has been sent to ${pharmacyName}. It will be delivered to your doorstep.`,
+            description: `Your prescription from Dr. ${selectedPrescription.doctorName} has been sent to ${pharmacyName}.`,
         })
     }
 
@@ -42,30 +50,53 @@ export default function OrderMedicinePage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <FileText className="h-6 w-6 text-primary"/>
-                            <CardTitle className="font-headline">Your Latest Prescription</CardTitle>
+                            <CardTitle className="font-headline">Your Prescriptions</CardTitle>
                         </div>
                         <CardDescription>
-                            This is the most recent prescription found in your records.
+                            Select a prescription to view its details and order medicines.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {isLoading && <Skeleton className="h-24 w-full" />}
-                        {!isLoading && latestPrescription ? (
-                            <div>
-                                <p className="text-sm text-muted-foreground mb-3">From Dr. {latestPrescription.doctorName} on {new Date(latestPrescription.date).toLocaleDateString()}</p>
-                                <div className="space-y-3 rounded-lg border p-4">
-                                {latestPrescription.medicines.map((med, index) => (
-                                    <div key={index} className="text-sm">
-                                        <p className="font-medium">{med.name} <span className="text-muted-foreground">({med.dosage})</span></p>
-                                        <p className="text-xs text-muted-foreground">{med.instructions}</p>
-                                    </div>
-                                ))}
-                                </div>
+                        {isLoading && (
+                            <div className="space-y-4">
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-24 w-full" />
                             </div>
+                        )}
+                        {!isLoading && prescriptions && prescriptions.length > 0 ? (
+                           <>
+                             <Select onValueChange={setSelectedPrescriptionId} value={selectedPrescriptionId || ""}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a prescription..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {prescriptions.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            Prescription from Dr. {p.doctorName} - {new Date(p.date).toLocaleDateString()}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            
+                            {selectedPrescription && (
+                                <div className="space-y-3 rounded-lg border p-4 animate-in fade-in-50">
+                                    <h4 className="font-semibold">Medicines to Order:</h4>
+                                    {selectedPrescription.medicines.map((med, index) => (
+                                        <div key={index}>
+                                            <div className="text-sm">
+                                                <p className="font-medium">{med.name} <span className="text-muted-foreground">({med.dosage})</span></p>
+                                                <p className="text-xs text-muted-foreground">{med.instructions}</p>
+                                            </div>
+                                            {index < selectedPrescription.medicines.length -1 && <Separator className="my-2"/>}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                           </>
                         ) : (
                              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-40 border-2 border-dashed rounded-lg">
                                 <FileText className="h-10 w-10 mb-2" />
-                                <p className="font-semibold">No prescription found.</p>
+                                <p className="font-semibold">No prescriptions found.</p>
                                 <p className="text-sm">Add a prescription from the "My Prescriptions" page.</p>
                              </div>
                         )}
@@ -88,7 +119,7 @@ export default function OrderMedicinePage() {
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                     <p className="text-sm font-medium">{pharmacy.distance}</p>
-                                    <Button size="sm" onClick={() => handleOrder(pharmacy.name)} disabled={!latestPrescription || isLoading}>
+                                    <Button size="sm" onClick={() => handleOrder(pharmacy.name)} disabled={!selectedPrescription}>
                                         <Bike className="mr-2 h-4 w-4"/>
                                         Order
                                     </Button>
