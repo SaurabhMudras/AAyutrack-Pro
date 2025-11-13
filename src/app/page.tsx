@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -32,30 +33,30 @@ export default function LoginPage() {
   const loginImage = PlaceHolderImages.find(image => image.id === "login-hero");
 
   useEffect(() => {
-    if (!isUserLoading && user) {
+    if (isClient && !isUserLoading && user) {
       toast({
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
       router.push("/dashboard");
     }
-  }, [user, isUserLoading, router, toast]);
+  }, [user, isUserLoading, router, toast, isClient]);
   
   useEffect(() => {
-    if (userError?.message.includes("auth/invalid-credential")) {
+    if (isClient && userError?.message.includes("auth/invalid-credential")) {
         toast({
             variant: "destructive",
             title: "Login Failed",
             description: "Invalid credentials. Please check your email and password, or sign up if you don't have an account.",
         });
-    } else if (userError) {
+    } else if (isClient && userError) {
         toast({
             variant: "destructive",
             title: "Login Failed",
             description: userError.message,
         });
     }
-  },[userError, toast])
+  },[userError, toast, isClient])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();

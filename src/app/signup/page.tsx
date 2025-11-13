@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Logo from "@/components/icons/logo";
 import { useToast } from "@/hooks/use-toast";
+import { updateProfile } from "firebase/auth";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -29,13 +31,22 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState("");
 
   useEffect(() => {
-    if (!isUserLoading && user) {
-      toast({
-        title: "Account Created",
-        description: "Redirecting to onboarding...",
-      });
-      router.push("/onboarding");
-    }
+    const handleUser = async () => {
+        if (!isUserLoading && user) {
+            // Update profile displayName
+            try {
+                await updateProfile(user, { displayName: `${firstName} ${lastName}` });
+            } catch (error) {
+                console.error("Error updating profile", error);
+            }
+            toast({
+                title: "Account Created",
+                description: "Redirecting to onboarding...",
+            });
+            router.push("/onboarding");
+        }
+    };
+    handleUser();
     if (userError) {
         toast({
             variant: "destructive",
@@ -43,10 +54,18 @@ export default function SignupPage() {
             description: userError.message,
         });
     }
-  }, [user, isUserLoading, userError, router, toast]);
+  }, [user, isUserLoading, userError, router, toast, firstName, lastName]);
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!firstName || !lastName || !email || !password) {
+        toast({
+            variant: "destructive",
+            title: "Missing Fields",
+            description: "Please fill out all fields.",
+        });
+        return;
+    }
     initiateEmailSignUp(auth, email, password);
   };
 
