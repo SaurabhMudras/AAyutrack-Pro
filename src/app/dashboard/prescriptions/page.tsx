@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import type { Prescription } from '@/types';
 import { collection } from 'firebase/firestore';
-import { ClipboardType, PlusCircle, UserMd } from 'lucide-react';
+import { ClipboardType, PlusCircle, Stethoscope } from 'lucide-react';
 import AddPrescriptionDialog from '@/components/dashboard/add-prescription-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -61,7 +61,7 @@ export default function PrescriptionsPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="font-headline flex items-center gap-2">
-                        <UserMd className="h-5 w-5 text-primary" />
+                        <Stethoscope className="h-5 w-5 text-primary" />
                         {prescription.doctorName}
                       </CardTitle>
                       <CardDescription>
