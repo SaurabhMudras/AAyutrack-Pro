@@ -38,7 +38,6 @@ import { Progress } from "@/components/ui/progress";
 import {
   healthMetrics,
   mockDoctors,
-  mockMedicationSchedule,
   mockUser,
 } from "@/lib/data";
 import {
@@ -52,8 +51,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddReminderDialog from "@/components/dashboard/add-reminder-dialog";
+import { useCollection, useFirebase, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { collection, doc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { Reminder } from "@/types";
+import { format } from "date-fns";
+import { textToSpeech } from "@/ai/flows/text-to-speech";
 
 const chartData = [
   { day: "Mon", steps: 5500 },
@@ -74,6 +78,74 @@ const chartConfig = {
 
 export default function Dashboard() {
   const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
+  const { user, firestore } = useFirebase();
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+  const remindersQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, "users", user.uid, "reminders");
+  }, [user, firestore]);
+
+  const { data: reminderData, isLoading } = useCollection<Reminder>(remindersQuery);
+
+  useEffect(() => {
+    if (reminderData) {
+        // sort by time
+        const sorted = [...reminderData].sort((a, b) => a.time.localeCompare(b.time));
+        setReminders(sorted);
+    }
+  }, [reminderData]);
+
+  const handleReminderCheck = (reminderId: string, isChecked: boolean) => {
+    if (!user) return;
+    const reminderRef = doc(firestore, "users", user.uid, "reminders", reminderId);
+    const today = format(new Date(), "yyyy-MM-dd");
+    
+    if(isChecked) {
+        updateDocumentNonBlocking(reminderRef, {
+            completedOn: arrayUnion(today)
+        });
+    } else {
+         updateDocumentNonBlocking(reminderRef, {
+            completedOn: arrayRemove(today)
+        });
+    }
+  };
+
+  useEffect(() => {
+    const checkReminders = async () => {
+      const now = new Date();
+      const currentTime = format(now, "HH:mm");
+      const today = format(now, "yyyy-MM-dd");
+
+      for (const reminder of reminders) {
+        const isCompletedToday = reminder.completedOn?.includes(today);
+        if (reminder.time === currentTime && !isCompletedToday) {
+          const reminderText = `Reminder for ${reminder.title}. ${reminder.details || ''}`;
+          const audioDataUri = await textToSpeech(reminderText);
+          const newAudio = new Audio(audioDataUri);
+          setAudio(newAudio);
+          newAudio.play();
+        }
+      }
+    };
+
+    const interval = setInterval(checkReminders, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [reminders]);
+
+  useEffect(() => {
+    return () => {
+      if (audio) {
+        audio.pause();
+        setAudio(null);
+      }
+    };
+  }, [audio]);
+
+  const today = format(new Date(), "yyyy-MM-dd");
+
   return (
     <>
       <AddReminderDialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen} />
@@ -110,9 +182,9 @@ export default function Dashboard() {
             <Pill className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{healthMetrics.medication.taken}/{healthMetrics.medication.total}</div>
+            <div className="text-2xl font-bold">{reminders.filter(r => r.type === 'medicine' && r.completedOn?.includes(today)).length}/{reminders.filter(r => r.type === 'medicine').length}</div>
             <p className="text-xs text-muted-foreground">doses taken today</p>
-            <Progress value={(healthMetrics.medication.taken / healthMetrics.medication.total) * 100} className="mt-4 h-2" />
+            <Progress value={(reminders.filter(r => r.type === 'medicine' && r.completedOn?.includes(today)).length / reminders.filter(r => r.type === 'medicine').length) * 100} className="mt-4 h-2" />
           </CardContent>
         </Card>
         <Card className="bg-accent/50 border-accent hover:border-accent/80 transition-colors">
@@ -157,9 +229,9 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center">
              <div className="grid gap-2">
-                <CardTitle className="font-headline">Medication Schedule</CardTitle>
+                <CardTitle className="font-headline">Daily Reminders</CardTitle>
                 <CardDescription>
-                Your prescribed medications for today.
+                Your scheduled tasks for today.
                 </CardDescription>
             </div>
             <Button size="sm" className="ml-auto gap-1" variant="ghost" onClick={() => setIsAddReminderOpen(true)}>
@@ -168,29 +240,39 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
+            {isLoading ? <p>Loading reminders...</p> : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10">Done</TableHead>
-                  <TableHead>Medicine</TableHead>
+                  <TableHead>Reminder</TableHead>
                   <TableHead>Time</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockMedicationSchedule.map((med) => (
-                  <TableRow key={med.id} className={med.taken ? "bg-secondary/50 hover:bg-secondary/70" : ""}>
-                    <TableCell>
-                      <Checkbox checked={med.taken} aria-label={`Mark ${med.name} as taken`} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{med.name}</div>
-                      <div className="text-xs text-muted-foreground">{med.dosage}</div>
-                    </TableCell>
-                    <TableCell>{med.time}</TableCell>
-                  </TableRow>
-                ))}
+                {reminders.map((reminder) => {
+                    const isCompleted = reminder.completedOn?.includes(today);
+                    return (
+                        (reminder.isRecurring || reminder.date === today) &&
+                        <TableRow key={reminder.id} className={isCompleted ? "bg-secondary/50 hover:bg-secondary/70" : ""}>
+                            <TableCell>
+                            <Checkbox 
+                                checked={isCompleted}
+                                onCheckedChange={(checked) => handleReminderCheck(reminder.id, !!checked)}
+                                aria-label={`Mark ${reminder.title} as completed`} 
+                            />
+                            </TableCell>
+                            <TableCell>
+                            <div className="font-medium">{reminder.title}</div>
+                            <div className="text-xs text-muted-foreground">{reminder.details}</div>
+                            </TableCell>
+                            <TableCell>{reminder.time}</TableCell>
+                        </TableRow>
+                    );
+                })}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
       </div>

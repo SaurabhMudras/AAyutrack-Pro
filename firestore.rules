@@ -14,6 +14,7 @@
  *  - /users/{userId}: Patient profile information.
  *  - /users/{userId}/health_metrics/{healthMetricId}: Health metrics logged by the patient.
  *  - /users/{userId}/medication_logs/{medicationLogId}: Medication logs for the patient.
+ *  - /users/{userId}/reminders/{reminderId}: Health reminders for the patient.
  *  - /users/{userId}/symptoms/{symptomId}: Symptoms reported by the patient.
  *  - /users/{userId}/reports/{reportId}: Health reports generated for the patient.
  *  - /users/{userId}/streaks/{streakId}: Streak data for the patient.
@@ -124,6 +125,15 @@ service cloud.firestore {
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
+    }
+    
+    /**
+     * @description Rules for the /users/{userId}/reminders/{reminderId} collection.
+     * @path /users/{userId}/reminders/{reminderId}
+     * @principle Enforces document ownership for reminder management.
+     */
+    match /users/{userId}/reminders/{reminderId} {
+      allow read, write: if isOwner(userId);
     }
 
     /**

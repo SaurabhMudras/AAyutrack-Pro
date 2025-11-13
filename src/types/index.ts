@@ -23,6 +23,19 @@ export type Medication = {
   taken: boolean;
 };
 
+export type Reminder = {
+    id: string;
+    patientId: string;
+    type: 'medicine' | 'appointment' | 'exercise';
+    title: string;
+    details?: string;
+    time: string;
+    date?: string;
+    isRecurring?: boolean;
+    completedOn?: string[]; // Array of YYYY-MM-DD dates
+    createdAt: any; // Firestore.Timestamp
+}
+
 export type Streak = {
   id: 'daily_checkin' | 'medication_adherence';
   name: string;

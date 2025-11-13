@@ -155,6 +155,63 @@
         "scheduledTime"
       ]
     },
+    "Reminder": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Reminder",
+      "type": "object",
+      "description": "Represents a health-related reminder for a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the reminder."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "The UID of the patient this reminder belongs to."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["medicine", "appointment", "exercise"],
+          "description": "The type of reminder."
+        },
+        "title": {
+          "type": "string",
+          "description": "The main title or name of the reminder (e.g., medicine name, exercise type)."
+        },
+        "details": {
+          "type": "string",
+          "description": "Additional details for the reminder (e.g., dosage, appointment location, duration)."
+        },
+        "time": {
+          "type": "string",
+          "format": "time",
+          "description": "The time the reminder is scheduled for (HH:mm)."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date for the reminder, primarily for appointments."
+        },
+        "isRecurring": {
+          "type": "boolean",
+          "description": "Whether the reminder repeats daily."
+        },
+        "completedOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "A list of dates (YYYY-MM-DD) on which this reminder was completed."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the reminder was created."
+        }
+      },
+      "required": ["id", "patientId", "type", "title", "time", "createdAt"]
+    },
     "Symptom": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Symptom",
@@ -329,6 +386,26 @@
             {
               "name": "medicationLogId",
               "description": "Unique identifier for the medication log."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/reminders/{reminderId}",
+        "definition": {
+          "entityName": "Reminder",
+          "schema": {
+            "$ref": "#/backend/entities/Reminder"
+          },
+          "description": "Stores reminders for the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "reminderId",
+              "description": "Unique identifier for the reminder."
             }
           ]
         }
