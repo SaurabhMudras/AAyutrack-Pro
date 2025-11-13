@@ -13,12 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Logo from "@/components/icons/logo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, userError } = useUser();
   const [email, setEmail] = useState("patient@aayutrack.com");
   const [password, setPassword] = useState("password");
 
@@ -33,6 +35,22 @@ export default function LoginPage() {
       router.push("/dashboard");
     }
   }, [user, isUserLoading, router, toast]);
+  
+  useEffect(() => {
+    if (userError?.message.includes("auth/invalid-credential")) {
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Invalid credentials. Please check your email and password, or sign up if you don't have an account.",
+        });
+    } else if (userError) {
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: userError.message,
+        });
+    }
+  },[userError, toast])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +78,17 @@ export default function LoginPage() {
               Enter your credentials to access your health dashboard
             </p>
           </div>
+          
+          {userError?.message.includes("auth/invalid-credential") && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>First time here?</AlertTitle>
+                <AlertDescription>
+                   It looks like you don't have an account. Please <Link href="/signup" className="underline font-bold">Sign Up</Link> to get started.
+                </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">RBMP ID / Email / Mobile</Label>
