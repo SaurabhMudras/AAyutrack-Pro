@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -64,5 +65,12 @@ export type Hospital = {
   name: string;
   address: string;
   phone: string;
+  distance: string;
+};
+
+export type Pharmacy = {
+  id: string;
+  name: string;
+  address: string;
   distance: string;
 };

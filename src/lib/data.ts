@@ -1,4 +1,5 @@
-import type { User, Medication, Streak, Doctor, Hospital } from "@/types";
+
+import type { User, Medication, Streak, Doctor, Hospital, Pharmacy } from "@/types";
 import { PlaceHolderImages } from "./placeholder-images";
 
 export const mockUser: User = {
@@ -79,6 +80,21 @@ export const mockHospitals: Hospital[] = [
         distance: "4.8 miles",
     }
 ]
+
+export const mockPharmacies: Pharmacy[] = [
+    {
+        id: "pharm1",
+        name: "Wellness Pharmacy",
+        address: "789 Cure Blvd, Metro City",
+        distance: "1.2 miles",
+    },
+    {
+        id: "pharm2",
+        name: "HealthFirst Meds",
+        address: "101 Remedy Lane, Metro City",
+        distance: "3.1 miles",
+    }
+];
 
 export const healthTrendsData = {
     bloodPressure: [
