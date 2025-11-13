@@ -8,6 +8,7 @@ import {
   Flame,
   LayoutDashboard,
   LineChart,
+  ClipboardType,
   Share2,
   Siren,
   Settings,
@@ -60,6 +61,13 @@ export default function DashboardLayout({
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Dashboard
+              </Link>
+              <Link
+                href="/dashboard/prescriptions"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <ClipboardType className="h-4 w-4" />
+                My Prescriptions
               </Link>
               <Link
                 href="/dashboard/progress"

@@ -19,6 +19,7 @@
  *  - /users/{userId}/symptoms/{symptomId}: Symptoms reported by the patient.
  *  - /users/{userId}/reports/{reportId}: Health reports generated for the patient.
  *  - /users/{userId}/streaks/{streakId}: Streak data for the patient.
+ *  - /users/{userId}/prescriptions/{prescriptionId}: Prescriptions from doctors or patient.
  *  - /users/{userId}/sharedWithDoctors/{doctorId}: Indicates data sharing with a doctor.
  *
  * Key Security Decisions:
@@ -50,6 +51,13 @@ service cloud.firestore {
      */
     function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
+    }
+    
+    /**
+     * @description Returns true if a doctor has been granted access by the patient.
+     */
+    function isSharedWithDoctor(patientId, doctorId) {
+      return exists(/databases/$(database)/documents/users/$(patientId)/sharedWithDoctors/$(doctorId));
     }
 
     /**
@@ -198,6 +206,16 @@ service cloud.firestore {
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+      * @description Rules for the /users/{userId}/prescriptions/{prescriptionId} collection.
+      * @path /users/{userId}/prescriptions/{prescriptionId}
+      * @principle Allows the owner to do anything. Allows a shared doctor to read and create.
+      */
+    match /users/{userId}/prescriptions/{prescriptionId} {
+      allow read, write: if isOwner(userId);
+      allow create, read: if isSharedWithDoctor(userId, request.auth.uid);
     }
 
      /**

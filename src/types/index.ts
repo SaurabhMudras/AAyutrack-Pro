@@ -74,3 +74,20 @@ export type Pharmacy = {
   address: string;
   distance: string;
 };
+
+export type PrescribedMedicine = {
+  name: string;
+  dosage: string;
+  instructions: string;
+}
+
+export type Prescription = {
+  id: string;
+  patientId: string;
+  doctorId: string; // Could be 'self' for manually added
+  doctorName: string;
+  date: string; // YYYY-MM-DD
+  medicines: PrescribedMedicine[];
+  createdAt: any; // Firestore.Timestamp
+}
+

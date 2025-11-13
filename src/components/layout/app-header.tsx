@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -12,6 +13,11 @@ import {
   Search,
   ShoppingCart,
   Users,
+  ClipboardType,
+  LineChart,
+  Bot,
+  Flame,
+  Share2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -39,10 +45,11 @@ import { usePathname } from "next/navigation";
 
 const navLinks = [
     { href: "/dashboard", icon: Home, label: "Dashboard" },
-    { href: "/dashboard/progress", icon: Users, label: "Progress" },
-    { href: "/dashboard/ai-checkup", icon: Package, label: "AI Checkup", badge: 6 },
-    { href: "/dashboard/streaks", icon: ShoppingCart, label: "Streaks" },
-    { href: "/dashboard/share-report", icon: Users, label: "Share Report" },
+    { href: "/dashboard/prescriptions", icon: ClipboardType, label: "My Prescriptions" },
+    { href: "/dashboard/progress", icon: LineChart, label: "Progress" },
+    { href: "/dashboard/ai-checkup", icon: Bot, label: "AI Checkup" },
+    { href: "/dashboard/streaks", icon: Flame, label: "Streaks" },
+    { href: "/dashboard/share-report", icon: Share2, label: "Share Report" },
   ];
 
 export default function AppHeader() {
@@ -75,9 +82,6 @@ export default function AppHeader() {
                >
                  <link.icon className="h-5 w-5" />
                  {link.label}
-                 {link.badge && <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                   {link.badge}
-                 </Badge>}
                </Link>
             ))}
           </nav>

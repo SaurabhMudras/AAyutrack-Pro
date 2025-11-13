@@ -172,7 +172,11 @@
         },
         "type": {
           "type": "string",
-          "enum": ["medicine", "appointment", "exercise"],
+          "enum": [
+            "medicine",
+            "appointment",
+            "exercise"
+          ],
           "description": "The type of reminder."
         },
         "title": {
@@ -206,12 +210,19 @@
           "description": "A list of dates (YYYY-MM-DD) on which this reminder was completed."
         },
         "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the reminder was created."
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the reminder was created."
         }
       },
-      "required": ["id", "patientId", "type", "title", "time", "createdAt"]
+      "required": [
+        "id",
+        "patientId",
+        "type",
+        "title",
+        "time",
+        "createdAt"
+      ]
     },
     "Symptom": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -325,6 +336,54 @@
         "currentStreak",
         "longestStreak"
       ]
+    },
+    "Prescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prescription",
+      "type": "object",
+      "description": "Represents a prescription from a doctor or added manually by the patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the prescription."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "The UID of the patient this prescription belongs to."
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "The UID of the doctor who issued the prescription. Can be 'self' if added manually by the patient."
+        },
+        "doctorName": {
+          "type": "string",
+          "description": "The name of the doctor or 'Self-Added' for manual entries."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date the prescription was issued."
+        },
+        "medicines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "dosage": { "type": "string" },
+              "instructions": { "type": "string" }
+            },
+            "required": ["name", "dosage", "instructions"]
+          },
+          "description": "A list of medicines in the prescription."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the prescription was created."
+        }
+      },
+      "required": ["id", "patientId", "doctorId", "doctorName", "date", "medicines", "createdAt"]
     }
   },
   "auth": {
@@ -487,6 +546,26 @@
             {
               "name": "doctorId",
               "description": "The Firebase UID of the doctor with whom the data is shared."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/prescriptions/{prescriptionId}",
+        "definition": {
+          "entityName": "Prescription",
+          "schema": {
+            "$ref": "#/backend/entities/Prescription"
+          },
+          "description": "Stores prescriptions from doctors or added manually by the patient.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the patient."
+            },
+            {
+              "name": "prescriptionId",
+              "description": "Unique identifier for the prescription."
             }
           ]
         }
