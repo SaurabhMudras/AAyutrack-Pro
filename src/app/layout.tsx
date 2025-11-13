@@ -4,10 +4,12 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { FirebaseClientProvider } from "@/firebase";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import PushNotificationProvider from "@/components/PushNotificationProvider";
 
 export const metadata: Metadata = {
   title: "AAYUTRACK Pro",
   description: "Your personal health tracking assistant.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -34,11 +36,15 @@ export default function RootLayout({
             disableTransitionOnChange
         >
             <FirebaseClientProvider>
-            {children}
-            <Toaster />
+              <PushNotificationProvider>
+                {children}
+              </PushNotificationProvider>
+              <Toaster />
             </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
+    

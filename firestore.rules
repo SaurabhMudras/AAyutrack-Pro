@@ -70,6 +70,19 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
+    
+    /**
+     * @description Rules for the /users/{userId}/fcmTokens/{tokenId} collection.
+     * @path /users/{userId}/fcmTokens/{tokenId}
+     * @allow (create) User can add their own FCM token.
+     * @allow (list) User can list their own FCM tokens.
+     * @allow (delete) User can delete their own FCM token.
+     * @principle Enforces ownership for FCM token management.
+     */
+    match /users/{userId}/fcmTokens/{tokenId} {
+        allow list, create, delete: if isOwner(userId);
+        allow get, update: if false;
+    }
 
     /**
      * @description Rules for the /users/{userId}/health_metrics/{healthMetricId} collection.
@@ -200,3 +213,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
