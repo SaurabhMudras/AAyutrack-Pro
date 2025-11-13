@@ -81,6 +81,16 @@ export default function Dashboard() {
   const { user, firestore } = useFirebase();
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [currentSteps, setCurrentSteps] = useState(healthMetrics.steps.current);
+
+  useEffect(() => {
+    // Simulate live step counting from a mobile sensor
+    const interval = setInterval(() => {
+      setCurrentSteps(prevSteps => prevSteps + Math.floor(Math.random() * 10));
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const remindersQuery = useMemoFirebase(() => {
     if (!user) return null;
@@ -114,6 +124,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    const requestNotificationPermission = async () => {
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            await Notification.requestPermission();
+        }
+    }
+    requestNotificationPermission();
+
     const checkReminders = async () => {
       const now = new Date();
       const currentTime = format(now, "HH:mm");
@@ -171,11 +188,11 @@ export default function Dashboard() {
             <Footprints className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{healthMetrics.steps.current.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{currentSteps.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Goal: {healthMetrics.steps.goal.toLocaleString()} steps
             </p>
-            <Progress value={(healthMetrics.steps.current / healthMetrics.steps.goal) * 100} className="mt-4 h-2" />
+            <Progress value={(currentSteps / healthMetrics.steps.goal) * 100} className="mt-4 h-2" />
           </CardContent>
         </Card>
         <Card className="hover:border-primary/80 transition-colors">
@@ -297,3 +314,5 @@ export default function Dashboard() {
     </>
   );
 }
+
+    
