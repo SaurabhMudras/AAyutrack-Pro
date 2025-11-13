@@ -23,6 +23,11 @@ export default function LoginPage() {
   const { user, isUserLoading, userError } = useUser();
   const [email, setEmail] = useState("patient@aayutrack.com");
   const [password, setPassword] = useState("password");
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const loginImage = PlaceHolderImages.find(image => image.id === "login-hero");
 
@@ -79,7 +84,7 @@ export default function LoginPage() {
             </p>
           </div>
           
-          {userError?.message.includes("auth/invalid-credential") && (
+          {isClient && userError?.message.includes("auth/invalid-credential") && (
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>First time here?</AlertTitle>
