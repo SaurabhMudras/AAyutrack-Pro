@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,6 +46,11 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AiCheckupPage() {
   const [result, setResult] = useState<AISymptomCheckerOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -62,6 +67,10 @@ export default function AiCheckupPage() {
     const aiResult = await aiSymptomChecker(values);
     setResult(aiResult);
     setIsLoading(false);
+  }
+
+  if (!isClient) {
+    return null;
   }
 
   return (
