@@ -1,19 +1,19 @@
+
+"use client";
+
 import Link from "next/link";
 import {
   Bell,
   Bot,
   Flame,
-  Home,
   LayoutDashboard,
   LineChart,
-  Package,
-  Package2,
-  Settings,
   Share2,
   Siren,
-  Users,
+  Settings,
   Video,
 } from "lucide-react";
+import React, { useState, useEffect } from 'react';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-card md:block">
@@ -64,13 +70,10 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/dashboard/ai-checkup"
-                className="flex items-center gap-3 rounded-lg bg-secondary px-3 py-2 text-primary transition-all hover:text-primary"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
               >
                 <Bot className="h-4 w-4" />
                 AI Checkup{" "}
-                <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  3
-                </Badge>
               </Link>
               <Link
                 href="/dashboard/streaks"
@@ -125,7 +128,7 @@ export default function DashboardLayout({
         </div>
       </div>
       <div className="flex flex-col">
-        <AppHeader />
+        {isClient && <AppHeader />}
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
           {children}
         </main>
